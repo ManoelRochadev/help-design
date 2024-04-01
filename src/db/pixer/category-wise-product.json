@@ -1,0 +1,62 @@
+[
+  {
+    "category_id": 6,
+    "category_name": "WordPress Theme",
+    "shop_name": "BentaSoft",
+    "product_count": 5
+  },
+  {
+    "category_id": 9,
+    "category_name": "Wireframe Kits",
+    "shop_name": "BentaSoft",
+    "product_count": 5
+  },
+  {
+    "category_id": 9,
+    "category_name": "Wireframe Kits",
+    "shop_name": "Imagineco",
+    "product_count": 5
+  },
+  {
+    "category_id": 7,
+    "category_name": "Angular",
+    "shop_name": "BentaSoft",
+    "product_count": 4
+  },
+  {
+    "category_id": 11,
+    "category_name": "Illustrations",
+    "shop_name": "BentaSoft",
+    "product_count": 4
+  },
+  {
+    "category_id": 8,
+    "category_name": "CMS",
+    "shop_name": "Omatron",
+    "product_count": 4
+  },
+  {
+    "category_id": 16,
+    "category_name": "Joomla",
+    "shop_name": "Maxicon Soft Tech",
+    "product_count": 4
+  },
+  {
+    "category_id": 15,
+    "category_name": "Bootstrap",
+    "shop_name": "BentaSoft",
+    "product_count": 4
+  },
+  {
+    "category_id": 7,
+    "category_name": "Angular",
+    "shop_name": "Qubitron Solutions",
+    "product_count": 4
+  },
+  {
+    "category_id": 4,
+    "category_name": "React",
+    "shop_name": "BentaSoft",
+    "product_count": 4
+  }
+]
