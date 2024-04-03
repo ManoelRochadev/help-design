@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
 import { CreateSettingDto } from './dto/create-setting.dto';
 import { SettingsService } from './settings.service';
 
@@ -14,5 +14,10 @@ export class SettingsController {
   @Get()
   findAll() {
     return this.settingsService.findAll();
+  }
+
+  @Put(':id')
+  update(@Param('id') id: string, @Body() updateSettingDto: CreateSettingDto) {
+    return this.settingsService.update(id, updateSettingDto);
   }
 }

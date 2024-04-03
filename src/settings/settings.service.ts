@@ -4,27 +4,68 @@ import { CreateSettingDto } from './dto/create-setting.dto';
 import { UpdateSettingDto } from './dto/update-setting.dto';
 import { Setting } from './entities/setting.entity';
 import settingsJson from '@db/settings.json';
+import { Settings } from 'src/schemas/product.schema';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { SettingsDocument } from 'src/schemas/settings.schema';
 
 const settings = plainToClass(Setting, settingsJson);
 
 @Injectable()
 export class SettingsService {
   private settings: Setting = settings;
+  constructor(@InjectModel(Settings.name) private readonly productModel: Model<SettingsDocument>) { }
 
-  create(createSettingDto: CreateSettingDto) {
-    return this.settings;
+  async create(createSettingDto: CreateSettingDto) {
+    const create = await this.productModel.create({
+      ...createSettingDto,
+      created_at: new Date(),
+      updated_at: new Date(),
+    });
+
+    return create
   }
 
-  findAll() {
-    return this.settings;
+  async findAll(): Promise<Setting> {
+    try {
+      const data = await this.productModel.find().exec();
+
+      const dataWithId: Setting[] = data.map((item) => {
+        return {
+          ...item.toObject(),
+          id: item._id.toString(),
+        }
+      });
+
+      return dataWithId[0];
+    } catch (error) {
+      console.log(error);
+      return error;
+    }
   }
 
   findOne(id: number) {
     return `This action returns a #${id} setting`;
   }
 
-  update(id: number, updateSettingDto: UpdateSettingDto) {
-    return this.settings;
+  async update(id: number | string, updateSettingDto: UpdateSettingDto) {
+    try {
+      const update = await this.productModel.findByIdAndUpdate(id, {
+        ...updateSettingDto,
+        updated_at: new Date(),
+      },
+        { new: true }
+      );
+
+      const dataWithId: Setting = {
+        ...update.toObject(),
+        id: update._id.toString(),
+      }
+
+      return dataWithId;
+    } catch (error) {
+      return error;
+    }
   }
 
   remove(id: number) {

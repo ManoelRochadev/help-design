@@ -15,6 +15,17 @@ import { GetBestSellingProductsDto } from './dto/get-best-selling-products.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { ProductDocument } from 'src/schemas/product.schema';
 import { Model } from 'mongoose';
+import { ShopDb, ShopDocument } from 'src/schemas/shop.schema';
+import typesJson from '@db/types.json';
+import { GetTypesDto } from 'src/types/dto/get-types.dto';
+import { Type } from 'src/types/entities/type.entity';
+
+const types = plainToClass(Type, typesJson);
+const optionsType = {
+  keys: ['name'],
+  threshold: 0.3,
+};
+const fuseType = new Fuse(types, optionsType);
 
 const products = plainToClass(Product, productsJson);
 const popularProducts = plainToClass(Product, popularProductsJson);
@@ -41,25 +52,40 @@ export class ProductsService {
   private products: any = products;
   private popularProducts: any = popularProducts;
   private bestSellingProducts: any = bestSellingProducts;
-  constructor(@InjectModel(Product.name) private readonly productModel: Model<ProductDocument>) { }
+  private types: Type[] = types;
+  constructor(@InjectModel(Product.name) private readonly productModel: Model<ProductDocument>,
+    @InjectModel(ShopDb.name) private readonly shopModel: Model<ShopDocument>
+  ) { }
 
-  create(createProductDto: CreateProductDto) {
-    const createdProduct = new this.productModel({
-      ...createProductDto,
-      in_wishlist: false,
-      total_reviews: 0,
-      ratings: 0,
-      created_at: new Date(),
-      updated_at: new Date(),
-    });
+  async create(createProductDto: CreateProductDto) {
     try {
+      const shop = await this.shopModel.findById(createProductDto.shop_id).lean().exec();
+      const type = this.types.find(type => type.id)
+      const shopWithId = {
+        ...shop,
+        id: shop._id.toString(),
+      }
+      console.log(createProductDto)
+      console.log(type)
+      const createdProduct = new this.productModel({
+        ...createProductDto,
+        in_wishlist: false,
+        total_reviews: 0,
+        ratings: 0,
+        created_at: new Date(),
+        updated_at: new Date(),
+        shop: shopWithId,
+        type: type
+      });
+
       return createdProduct.save();
     } catch (error) {
+      console.log(error)
       return error;
     }
   }
 
-  async getProducts({ limit, page, search }: GetProductsDto): Promise<ProductPaginator> { 
+  async getProducts({ limit, page, search }: GetProductsDto): Promise<ProductPaginator> {
     if (!page) page = 1;
     if (!limit) limit = 15;
     const startIndex = (page - 1) * limit;
@@ -106,7 +132,7 @@ export class ProductsService {
     // remover o _id e colocar id no lugar
 
     const results = data.slice(startIndex, endIndex);
-    
+
     const url = `/products?search=${search}&limit=${limit}`;
     return {
       data: results.map((item) => {
@@ -120,7 +146,7 @@ export class ProductsService {
   }
 
   async getProductBySlug(slug: string): Promise<Product> {
-   const product = await this.productModel.findOne({
+    const product = await this.productModel.findOne({
       slug: slug,
     });
 
@@ -143,7 +169,7 @@ export class ProductsService {
         id: item._id,
       };
     });
-    
+
 
     if (type_slug) {
       const results = data.filter((item) => item.type.slug === type_slug);
@@ -189,7 +215,7 @@ export class ProductsService {
           id: item._id,
         };
       });
-  
+
       return data?.slice(0, limit);
     } catch (error) {
       return error;
@@ -320,8 +346,8 @@ export class ProductsService {
       const removedProduct = await this.productModel.findOne()
         .deleteOne({ id: id })
         .exec();
-  
-        return `This action removes a #${id} product`;
+
+      return `This action removes a #${id} product`;
     } catch (error) {
       return error;
     }

@@ -34,11 +34,11 @@ export class TypesController {
 
   @Put(':id')
   update(@Param('id') id: string, @Body() updateTypeDto: UpdateTypeDto) {
-    return this.typesService.update(+id, updateTypeDto);
+    return this.typesService.update(id, updateTypeDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.typesService.remove(+id);
+    return this.typesService.remove(id);
   }
 }

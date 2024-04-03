@@ -30,7 +30,7 @@ export class PaymentMethodService {
    // private readonly stripeService: StripePaymentService,
     private readonly settingService: SettingsService,
   ) {}
-  private setting: Setting = this.settingService.findAll();
+  private setting: Promise<Setting> = this.settingService.findAll();
   private users: User[] = users;
   async create(createPaymentMethodDto: CreatePaymentMethodDto) {
     try {
