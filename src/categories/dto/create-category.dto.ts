@@ -9,4 +9,5 @@ export class CreateCategoryDto extends PickType(Category, [
   'icon',
   'image',
   'language',
+  'slug',
 ]) {}
