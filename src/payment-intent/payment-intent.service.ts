@@ -8,7 +8,7 @@ import {
 import ordersJson from '@db/orders.json';
 import { Order, PaymentGatewayType } from 'src/orders/entities/order.entity';
 import { GetPaymentIntentDto } from './dto/get-payment-intent.dto';
-//import { StripePaymentService } from 'src/payment/stripe-payment.service';
+import { StripePaymentService } from 'src/payment/stripe-payment.service';
 import { PaypalPaymentService } from 'src/payment/paypal-payment.service';
 
 const orders = plainToClass(Order, ordersJson);
@@ -18,9 +18,9 @@ const paymentIntents = plainToClass(PaymentIntent, taxesJson);
 export class PaymentIntentService {
   private paymentIntents: PaymentIntent[] = paymentIntents;
   constructor(
-  //  private readonly stripeService: StripePaymentService,
+    private readonly stripeService: StripePaymentService,
     private readonly paypalService: PaypalPaymentService,
-  ) {}
+  ) { }
   async getPaymentIntent(query: GetPaymentIntentDto) {
     // requires_payment_method
     const payment_intent_info: PaymentIntentInfo = {
@@ -32,18 +32,18 @@ export class PaymentIntentService {
     const { payment_gateway } = query;
 
     switch (payment_gateway) {
-      /*
+
       case PaymentGatewayType.STRIPE:
         const list = await this.stripeService.retrivePaymentIntents();
-        const { id, client_secret } = list.data.find(
-          (s) => s.status == 'requires_payment_method' || !s.amount_capturable,
+        const { id, client_secret } = list.find(
+          (s) => s.status == 'requires_payment_method' || !s.amount_received,
         );
         payment_intent_info['payment_id'] = id;
         payment_intent_info['is_redirect'] = false;
         payment_intent_info['client_secret'] = client_secret;
 
         break;
-        */
+
       case PaymentGatewayType.PAYPAL:
         const order = orders[0];
         const paypalIntent = await this.paypalService.createPaymentIntent(

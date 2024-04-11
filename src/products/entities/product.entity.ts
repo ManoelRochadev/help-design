@@ -6,7 +6,7 @@ import { Order } from 'src/orders/entities/order.entity';
 import { Shop } from 'src/shops/entities/shop.entity';
 import { Tag } from 'src/tags/entities/tag.entity';
 import { Type } from 'src/types/entities/type.entity';
-import { Review } from '../../reviews/entities/review.entity';
+import { ReviewEnt } from '../../reviews/entities/review.entity';
 
 export enum ProductStatus {
   PUBLISH = 'publish',
@@ -23,7 +23,7 @@ export class Product extends CoreEntity {
   name: string;
   slug: string;
   type: Type;
-  type_id: number;
+  type_id: string;
   product_type: ProductType;
   categories: Category[];
   tags?: Tag[];
@@ -53,7 +53,7 @@ export class Product extends CoreEntity {
   unit: string;
   ratings: number;
   in_wishlist: boolean;
-  my_review?: Review[];
+  my_review?: ReviewEnt[];
   language?: string;
   translated_languages?: string[];
 }

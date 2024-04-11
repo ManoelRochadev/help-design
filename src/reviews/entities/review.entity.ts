@@ -7,7 +7,7 @@ import { Attachment } from 'src/common/entities/attachment.entity';
 import { Report } from './reports.entity';
 import { Feedback } from 'src/feedbacks/entities/feedback.entity';
 
-export class Review extends CoreEntity {
+export class ReviewEnt extends CoreEntity {
   rating: number;
   name: string;
   comment: string;

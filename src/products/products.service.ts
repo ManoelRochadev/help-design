@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import { CreateProductDto } from './dto/create-product.dto';
 import { GetProductsDto, ProductPaginator } from './dto/get-products.dto';
@@ -19,13 +19,14 @@ import { ShopDb, ShopDocument } from 'src/schemas/shop.schema';
 import typesJson from '@db/types.json';
 import { GetTypesDto } from 'src/types/dto/get-types.dto';
 import { Type } from 'src/types/entities/type.entity';
+import { Tags } from 'src/schemas/tag.schema';
+import { Types} from 'src/schemas/type.schema';
 
 const types = plainToClass(Type, typesJson);
 const optionsType = {
   keys: ['name'],
   threshold: 0.3,
 };
-const fuseType = new Fuse(types, optionsType);
 
 const products = plainToClass(Product, productsJson);
 const popularProducts = plainToClass(Product, popularProductsJson);
@@ -54,13 +55,18 @@ export class ProductsService {
   private bestSellingProducts: any = bestSellingProducts;
   private types: Type[] = types;
   constructor(@InjectModel(Product.name) private readonly productModel: Model<ProductDocument>,
-    @InjectModel(ShopDb.name) private readonly shopModel: Model<ShopDocument>
+    @InjectModel(ShopDb.name) private readonly shopModel: Model<ShopDocument>,
+    @InjectModel(Tags.name) private readonly tagModel: Model<Tags>,
+    @InjectModel(Types.name) private readonly typeModel: Model<Types>
   ) { }
 
   async create(createProductDto: CreateProductDto) {
     try {
       const shop = await this.shopModel.findById(createProductDto.shop_id).lean().exec();
-      const type = this.types.find(type => type.id)
+      const type = await this.typeModel.findById(createProductDto.type_id).lean().exec()
+      const tags = await this.tagModel.find({ _id: { $in: createProductDto.tags } }).lean().exec();
+      console.log(tags)
+      
       const shopWithId = {
         ...shop,
         id: shop._id.toString(),
@@ -75,7 +81,9 @@ export class ProductsService {
         created_at: new Date(),
         updated_at: new Date(),
         shop: shopWithId,
-        type: type
+        type: type,
+        translated_languages: [createProductDto.language],
+        tags: tags
       });
 
       return createdProduct.save();
@@ -93,8 +101,10 @@ export class ProductsService {
     let data = await this.productModel.find();
     //console.log('data', data);
     if (search) {
+      const fuseType = new Fuse(data, optionsType);
       const parseSearchParams = search.split(';');
-      const searchText: any = [];
+
+      const searchText = [];
       let priceFilter;
       for (const searchParam of parseSearchParams) {
         const [key, value] = searchParam.split(':');
@@ -107,7 +117,9 @@ export class ProductsService {
         }
       }
 
-      data = await this.productModel.find({}).where({ $and: searchText })
+      data = searchText.some(obj => Object.keys(obj).includes('name')) ? 
+      fuseType.search(searchText[0]).map((item) => item.item) : 
+      await this.productModel.find({}).where({ $and: searchText })
 
       // Filter data throw price
       if (priceFilter) {
@@ -340,16 +352,13 @@ export class ProductsService {
     }
   }
 
-  async remove(id: number) {
-    // remover um produto
-    try {
-      const removedProduct = await this.productModel.findOne()
-        .deleteOne({ id: id })
-        .exec();
+  async remove(id: number | string) {
+    const product = await this.productModel.findByIdAndDelete(id);
 
-      return `This action removes a #${id} product`;
-    } catch (error) {
-      return error;
+    if (!product) {
+      throw new HttpException('Product not found', 404);
     }
+
+    return `Product with id ${id} has been deleted`;
   }
 }

@@ -8,7 +8,7 @@ import {
   StripeCustomer,
   StripePaymentMethod,
 } from 'src/payment/entity/stripe.entity';
-//import { StripePaymentService } from 'src/payment/stripe-payment.service';
+import { StripePaymentService } from 'src/payment/stripe-payment.service';
 import { Setting } from 'src/settings/entities/setting.entity';
 import { SettingsService } from 'src/settings/settings.service';
 import { User } from 'src/users/entities/user.entity';
@@ -27,9 +27,9 @@ export class PaymentMethodService {
   private paymentMethods: PaymentMethod[] = paymentMethods;
   constructor(
     private readonly authService: AuthService,
-   // private readonly stripeService: StripePaymentService,
+    private readonly stripeService: StripePaymentService,
     private readonly settingService: SettingsService,
-  ) {}
+  ) { }
   private setting: Promise<Setting> = this.settingService.findAll();
   private users: User[] = users;
   async create(createPaymentMethodDto: CreatePaymentMethodDto) {
@@ -70,7 +70,7 @@ export class PaymentMethodService {
   update(id: number, updatePaymentMethodDto: UpdatePaymentMethodDto) {
     return this.findOne(id);
   }
-/*
+
   remove(id: number) {
     const card: PaymentMethod = this.findOne(id);
     try {
@@ -84,7 +84,7 @@ export class PaymentMethodService {
     );
     return card;
   }
-*/
+
   saveDefaultCart(defaultCart: DefaultCart) {
     const { method_id } = defaultCart;
     this.paymentMethods = [...this.paymentMethods].map((c: PaymentMethod) => {
@@ -120,7 +120,7 @@ export class PaymentMethodService {
       createPaymentMethodDto.default_card = true;
     }
     switch (paymentGateway) {
-      /*
+
       case 'stripe':
         const retrievedPaymentMethod =
           await this.stripeService.retrievePaymentMethod(method_key);
@@ -141,7 +141,7 @@ export class PaymentMethodService {
           return paymentMethod;
         }
         break;
-        */
+
       case 'paypal':
         // TODO
         //paypal code goes here
@@ -159,7 +159,7 @@ export class PaymentMethodService {
     }
     return false;
   }
-/*
+
   async makeNewPaymentMethodObject(
     createPaymentMethodDto: CreatePaymentMethodDto,
     paymentGateway: string,
@@ -217,5 +217,5 @@ export class PaymentMethodService {
     };
     return paymentMethod;
   }
-  */
+
 }

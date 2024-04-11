@@ -19,6 +19,7 @@ export class SettingsService {
   async create(createSettingDto: CreateSettingDto) {
     const create = await this.productModel.create({
       ...createSettingDto,
+      translated_languages: [createSettingDto.language],
       created_at: new Date(),
       updated_at: new Date(),
     });
@@ -50,7 +51,11 @@ export class SettingsService {
 
   async update(id: number | string, updateSettingDto: UpdateSettingDto) {
     try {
-      const update = await this.productModel.findByIdAndUpdate(id, {
+
+      const settings = await this.productModel.find().lean().exec();
+      const idbd = settings[0]._id.toString();
+      
+      const update = await this.productModel.findByIdAndUpdate(idbd, {
         ...updateSettingDto,
         updated_at: new Date(),
       },

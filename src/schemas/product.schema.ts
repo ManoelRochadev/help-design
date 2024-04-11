@@ -6,7 +6,7 @@ import { Tag } from 'src/tags/entities/tag.entity';
 import { Category } from 'src/categories/entities/category.entity';
 import { Shop } from 'src/shops/entities/shop.entity';
 import { Attachment } from 'src/common/entities/attachment.entity';
-import { Review } from 'src/reviews/entities/review.entity';
+import { ReviewEnt } from 'src/reviews/entities/review.entity';
 
 // Definindo o schema para a subdocument "Image"
 @Schema({ _id: false })
@@ -86,7 +86,7 @@ export class ProductDocument extends Document {
   description: string;
 
   @Prop({ required: true })
-  type_id: number;
+  type_id: string;
 
   @Prop({ required: true })
   price: number;
@@ -158,7 +158,7 @@ export class ProductDocument extends Document {
   rating_count: RatingCount[];
 
   @Prop()
-  my_review: Review[];
+  my_review: ReviewEnt[];
 
   @Prop({ required: true })
   in_wishlist: boolean;

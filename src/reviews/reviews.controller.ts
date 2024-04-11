@@ -23,6 +23,7 @@ export class ReviewController {
   // In product single page front-end all the reviews apperaed. It should be based on product ID.
   @Get()
   async findAll(@Query() query: GetReviewsDto) {
+
     return this.reviewService.findAllReviews(query);
   }
 

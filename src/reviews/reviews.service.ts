@@ -6,9 +6,12 @@ import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { GetReviewsDto, ReviewPaginator } from './dto/get-reviews.dto';
 import reviewJSON from '@db/reviews.json';
-import { Review } from './entities/review.entity';
+import { ReviewEnt } from './entities/review.entity';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Review } from 'src/schemas/review.schema';
 
-const reviews = plainToClass(Review, reviewJSON);
+const reviews = plainToClass(ReviewEnt, reviewJSON);
 const options = {
   keys: ['product_id'],
   threshold: 0.3,
@@ -17,14 +20,20 @@ const fuse = new Fuse(reviews, options);
 
 @Injectable()
 export class ReviewService {
-  private reviews: Review[] = reviews;
+  constructor(
+    @InjectModel(Review.name) private readonly reviewModel: Model<Review>,
+  ) {}
+  private reviews: ReviewEnt[] = reviews;
 
-  findAllReviews({ limit, page, search, product_id }: GetReviewsDto) {
+  async findAllReviews({ limit, page, search, product_id }: GetReviewsDto) {
+    const reviews = await this.reviewModel.find();
+
+   // console.log(reviews);
     if (!page) page = 1;
     if (!limit) limit = 30;
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
-    let data: Review[] = this.reviews;
+    let data: ReviewEnt[] = this.reviews;
 
     if (search) {
       const parseSearchParams = search.split(';');
@@ -50,8 +59,9 @@ export class ReviewService {
     return this.reviews.find((p) => p.id === id);
   }
 
-  create(createReviewDto: CreateReviewDto) {
-    return this.reviews[0];
+  async create(createReviewDto: CreateReviewDto) {
+    const createdReview = new this.reviewModel(createReviewDto);
+    return createdReview.save();
   }
 
   update(id: number, updateReviewDto: UpdateReviewDto) {

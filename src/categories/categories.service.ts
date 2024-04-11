@@ -24,6 +24,14 @@ export class CategoriesService {
   private categories: Category[] = categories;
 
   async create(createCategoryDto: CreateCategoryDto) {
+    // verificar se o slug já existe se sim retornar erro
+
+    const category = await this.categoryModel.findOne({ slug: createCategoryDto.slug }).lean().exec();
+
+    if (category) {
+      throw new HttpException('Category already exists', 409);
+    }
+
     const parent = createCategoryDto.parent ? await this.categoryModel.findById(createCategoryDto.parent).lean().exec() : null;
 
     const parentWithId = parent ? {
@@ -113,6 +121,12 @@ export class CategoriesService {
   }
 
   async update(id: number | string, updateCategoryDto: UpdateCategoryDto) {
+    // verificar se o slug já existe se sim retornar erro
+    const categorySlug = await this.categoryModel.findOne({ slug: updateCategoryDto.slug }).lean().exec();
+
+    if (categorySlug && categorySlug._id.toString() !== id.toString()) {
+      throw new HttpException('Category already exists', 409);
+    }
 
     const category = await this.categoryModel.findById(id).lean().exec();
 

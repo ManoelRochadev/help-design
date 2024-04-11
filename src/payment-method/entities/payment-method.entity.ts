@@ -9,7 +9,7 @@ export class PaymentMethod extends CoreEntity {
   @IsOptional()
   @IsBoolean()
   default_card: boolean;
-  payment_gateway_id?: number;
+  payment_gateway_id?: number | string;
   fingerprint?: string;
   owner_name?: string;
   network?: string;

@@ -12,10 +12,12 @@ import mongoose from 'mongoose';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ProductSchema } from 'src/schemas/product.schema';
 import { ShopDb, ShopSchema } from 'src/schemas/shop.schema';
+import { TagSchema } from 'src/schemas/tag.schema';
+import { TypesSchema } from 'src/schemas/type.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{name: 'Product', schema: ProductSchema}, { name: ShopDb.name, schema: ShopSchema }, ])
+    MongooseModule.forFeature([{name: 'Product', schema: ProductSchema}, { name: ShopDb.name, schema: ShopSchema }, { name: 'Tags', schema: TagSchema }, {name: 'Product', schema: ProductSchema}, { name: 'Types', schema: TypesSchema }])
   ],
   controllers: [
     ProductsController,
