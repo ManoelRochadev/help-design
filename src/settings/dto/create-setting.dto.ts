@@ -1,7 +1,7 @@
 import { OmitType } from '@nestjs/swagger';
 import { Setting } from '../entities/setting.entity';
+import { set } from 'mongoose';
 
-export class CreateSettingDto extends OmitType(Setting, [
-  'created_at',
-  'updated_at',
-]) {}
+export class CreateSettingDto extends Setting {
+  
+}

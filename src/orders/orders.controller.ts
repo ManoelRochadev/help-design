@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Query,
+  Req,
   UsePipes,
 } from '@nestjs/common';
 import { CreateOrderStatusDto } from './dto/create-order-status.dto';
@@ -28,8 +29,8 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
-  async create(@Body() createOrderDto: CreateOrderDto): Promise<Order> {
-    return this.ordersService.create(createOrderDto);
+  async create(@Body() createOrderDto: CreateOrderDto, @Req() req): Promise<Order> {
+    return this.ordersService.create(createOrderDto, req?.headers?.authorization);
   }
 
   @Get()

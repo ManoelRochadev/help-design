@@ -83,8 +83,8 @@ export class VariationOption {
 
 export class File extends CoreEntity {
   attachment_id: number;
-  url: string;
-  fileable_id: number;
+  url?: string;
+  fileable_id?: number;
 }
 
 export class Video {

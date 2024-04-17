@@ -220,7 +220,7 @@ export class AuthService {
   // }
   async me(token: string): Promise<User> {
     // Extract bearer
-    const extractToken = token.replace('Bearer', '').trim();;
+    const extractToken = token.replace('Bearer', '').trim();
 
     if (!extractToken) {
       throw new UnauthorizedException();

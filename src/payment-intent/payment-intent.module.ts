@@ -9,7 +9,7 @@ import { StripePaymentService } from 'src/payment/stripe-payment.service';
   imports: [
     PaymentModule, 
     StripeModule.forRoot(StripeModule, {
-      apiKey: process.env.STRIPE_API_KEY,
+      apiKey: "sk_test_51K9Z0dFu1cI6jFK0fMQMcNLYOiNYOlUjEeGQ9fL7jC4XdmtGrCyI0EgOGIZhrAztKqAG4zlHi4brnpmIUZUp1uVB00QmAlmkbC",
       apiVersion: '2022-11-15',
     }),
   ],

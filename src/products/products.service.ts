@@ -65,7 +65,6 @@ export class ProductsService {
       const shop = await this.shopModel.findById(createProductDto.shop_id).lean().exec();
       const type = await this.typeModel.findById(createProductDto.type_id).lean().exec()
       const tags = await this.tagModel.find({ _id: { $in: createProductDto.tags } }).lean().exec();
-      console.log(tags)
       
       const shopWithId = {
         ...shop,
@@ -83,7 +82,7 @@ export class ProductsService {
         shop: shopWithId,
         type: type,
         translated_languages: [createProductDto.language],
-        tags: tags
+        tags: tags,
       });
 
       return createdProduct.save();

@@ -31,7 +31,6 @@ export class StripePaymentService {
 
   async createCustomer(createCustomerDto: StripeCreateCustomerDto): Promise<StripeCustomer> {
     try {
-      console.log(createCustomerDto)
       return await this.stripeClient.customers.create(createCustomerDto);
     } catch(error) {
       console.log(error);
@@ -59,6 +58,7 @@ export class StripePaymentService {
 
   async createPaymentMethod(cardElementDto: CardElementDto): Promise<StripePaymentMethod> {
     try {
+      console.log(cardElementDto)
       const paymentMethod = await this.stripeClient.paymentMethods.create({
         type: 'card',
         card: cardElementDto,

@@ -34,6 +34,7 @@ export class PaymentMethodService {
   private users: User[] = users;
   async create(createPaymentMethodDto: CreatePaymentMethodDto) {
     try {
+      console.log("Create payment method")
       const defaultCard = this.paymentMethods.find(
         (card: PaymentMethod) => card.default_card,
       );
@@ -122,6 +123,7 @@ export class PaymentMethodService {
     switch (paymentGateway) {
 
       case 'stripe':
+        console.log("Stripe payment method")
         const retrievedPaymentMethod =
           await this.stripeService.retrievePaymentMethod(method_key);
         if (
@@ -129,6 +131,7 @@ export class PaymentMethodService {
             retrievedPaymentMethod.card.fingerprint,
           )
         ) {
+          console.log("Payment method already exists")
           return this.paymentMethods.find(
             (pMethod: PaymentMethod) => pMethod.method_key === method_key,
           );

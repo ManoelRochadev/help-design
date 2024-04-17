@@ -43,6 +43,7 @@ import { NotifyLogsModule } from './notify-logs/notify-logs.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { StripeModule } from '@golevelup/nestjs-stripe';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -100,6 +101,10 @@ import { join } from 'path';
         extensions: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv', 'xml', 'json', 'zip', 'rar', '7z', 'tar', 'gz', 'mp4', 'mp3', 'avi', 'flv', 'mov', 'wmv', 'wma', 'wav', 'ogg', 'webm', 'mkv', 'm4a', 'm4v', 'mpg', 'mpeg', 'm4v', '3gp', '3g2', 'ts', 'flac', 'aac', 'opus', 'm4b', 'm4p', 'm4r', 'm4v', 'm4a', 'm4b', 'm4p', 'm4r', 'm4v', 'm4a', 'm4b', 'm4p', 'm4r', 'm4v', 'm4a', 'm4b', 'm4p', 'm4r', 'm4v', 'm4a', 'm4b', 'm4p', 'm4r', 'm4v', 'm4a', 'm4b', 'm4p', 'm4r', 'm4v', 'm4a', 'm4b', 'm4p', 'm4r', 'm4v', 'm4a', 'm4b', 'm4p', 'm4r', 'm4v', 'm4a', 'm4b', 'm4p', 'm4r', 'm4v'],
       },
       exclude: ['/api/(.*)'],
+    }),
+    StripeModule.forRoot(StripeModule, {
+      apiKey: "sk_test_51K9Z0dFu1cI6jFK0fMQMcNLYOiNYOlUjEeGQ9fL7jC4XdmtGrCyI0EgOGIZhrAztKqAG4zlHi4brnpmIUZUp1uVB00QmAlmkbC",
+      apiVersion: '2022-11-15',
     }),
   ],
   controllers: [],

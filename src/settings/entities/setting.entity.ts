@@ -1,7 +1,8 @@
 import { Attachment } from 'src/common/entities/attachment.entity';
 import { CoreEntity } from 'src/common/entities/core.entity';
 
-export class Setting extends CoreEntity {
+export class Setting {
+  id?: string;
   options: SettingsOptions;
   language: string;
   translated_languages: string[];

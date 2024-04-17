@@ -27,6 +27,9 @@ export class DigitalFile {
   id: number;
 
   @Prop()
+  attachment_id: string;
+
+  @Prop()
   name: string;
 
   @Prop()

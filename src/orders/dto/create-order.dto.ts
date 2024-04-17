@@ -1,5 +1,7 @@
 import { PaymentIntent } from 'src/payment-intent/entries/payment-intent.entity';
-import { PaymentGatewayType } from '../entities/order.entity';
+import { OrderFiles, PaymentGatewayType } from '../entities/order.entity';
+import { DigitalFile } from 'src/schemas/product.schema';
+import { Product } from 'src/products/entities/product.entity';
 
 export class CreateOrderDto {
   shop_id?: number;
@@ -9,18 +11,20 @@ export class CreateOrderDto {
   products: ConnectProductOrderPivot[];
   amount: number;
   sales_tax: number;
-  total?: number;
-  paid_total?: number;
-  payment_id?: string;
-  payment_gateway?: PaymentGatewayType;
-  discount?: number;
+  total: number;
+  paid_total: number;
+  payment_id: string;
+  payment_gateway: PaymentGatewayType;
+  discount: number;
   delivery_fee?: number;
   delivery_time: string;
   card?: CardInput;
-  billing_address?: UserAddressInput;
-  shipping_address?: UserAddressInput;
+  billing_address: UserAddressInput;
+  shipping_address: UserAddressInput;
   payment_intent: PaymentIntent;
-  language?: string;
+  language: string;
+  order_status: string;
+  payment_status: string;
 }
 
 export class UserAddressInput {
@@ -32,11 +36,12 @@ export class UserAddressInput {
 }
 
 export class ConnectProductOrderPivot {
-  product_id: number;
+  product_id: number | string;
   variation_option_id?: number;
   order_quantity: number;
   unit_price: number;
   subtotal: number;
+  digital_file?: OrderFiles;
 }
 
 export class CardInput {

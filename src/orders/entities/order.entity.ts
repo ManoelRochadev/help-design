@@ -6,6 +6,7 @@ import { File, Product } from 'src/products/entities/product.entity';
 import { Shop } from 'src/shops/entities/shop.entity';
 import { User } from 'src/users/entities/user.entity';
 import { OrderStatus } from './order-status.entity';
+import { ConnectProductOrderPivot } from '../dto/create-order.dto';
 
 export enum PaymentGatewayType {
   STRIPE = 'STRIPE',
@@ -41,37 +42,37 @@ export enum PaymentStatusType {
 }
 
 export class Order extends CoreEntity {
-  tracking_number: string;
-  customer_id: number;
+  tracking_number: number;
+  customer_id: number | string;
   customer_contact: string;
   customer: User;
   parent_order?: Order;
-  children: Children[];
-  status: OrderStatus;
-  order_status: OrderStatusType;
-  payment_status: PaymentStatusType;
+  children?: Children[];
+  status: string;
+  order_status?: string;
+  payment_status?: string;
   amount: number;
-  sales_tax: number;
+  sales_tax?: number;
   total: number;
-  paid_total: number;
+  paid_total?: number;
   payment_id?: string;
   payment_gateway: PaymentGatewayType;
   coupon?: Coupon;
-  shop: Shop;
+  shop?: Shop;
   discount?: number;
-  delivery_fee: number;
-  delivery_time: string;
-  products: Product[];
-  billing_address: UserAddress;
-  shipping_address: UserAddress;
+  delivery_fee?: number;
+  delivery_time?: string;
+  products?: ConnectProductOrderPivot[];
+  billing_address?: UserAddress;
+  shipping_address?: UserAddress;
   language: string;
-  translated_languages: string[];
-  payment_intent: PaymentIntent;
+  translated_languages?: string[];
+  payment_intent?: PaymentIntent;
   altered_payment_gateway?: string;
 }
 
 export class Children {
-  id?: number;
+  id?: number | string;
   tracking_number?: string;
   customer_id?: number;
   customer_contact?: string;
@@ -100,10 +101,13 @@ export class Children {
   shop?: Shop;
 }
 export class OrderFiles extends CoreEntity {
-  purchase_key: string;
-  digital_file_id: number;
+  url?: string;
+  purchase_key?: string;
+  digital_file_id?: number;
   order_id?: number;
-  customer_id: number;
-  file: File;
-  fileable: Product;
+  customer_id?: number | string;
+  file?: File;
+  fileable?: Product;
+  fileable_id: number;
+  attachment_id?: string;
 }
