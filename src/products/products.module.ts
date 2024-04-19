@@ -14,10 +14,18 @@ import { ProductSchema } from 'src/schemas/product.schema';
 import { ShopDb, ShopSchema } from 'src/schemas/shop.schema';
 import { TagSchema } from 'src/schemas/tag.schema';
 import { TypesSchema } from 'src/schemas/type.schema';
+import { Review, ReviewSchema } from 'src/schemas/review.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{name: 'Product', schema: ProductSchema}, { name: ShopDb.name, schema: ShopSchema }, { name: 'Tags', schema: TagSchema }, {name: 'Product', schema: ProductSchema}, { name: 'Types', schema: TypesSchema }])
+    MongooseModule.forFeature([
+      {name: 'Product', schema: ProductSchema}, 
+      { name: ShopDb.name, schema: ShopSchema }, 
+      { name: 'Tags', schema: TagSchema }, 
+      {name: 'Product', schema: ProductSchema}, 
+      { name: 'Types', schema: TypesSchema },
+    {name: Review.name, schema: ReviewSchema},
+    ])
   ],
   controllers: [
     ProductsController,

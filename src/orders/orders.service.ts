@@ -52,6 +52,7 @@ import { SettingsDocument } from 'src/schemas/settings.schema';
 import { ProductDocument, Settings } from 'src/schemas/product.schema';
 import { OrderFile } from 'src/schemas/orderFile';
 import { Upload } from 'src/schemas/upload.schema';
+import { Review } from 'src/schemas/review.schema';
 
 const orders = plainToClass(Order, ordersJson);
 const paymentIntents = plainToClass(PaymentIntent, paymentIntentJson);
@@ -96,7 +97,8 @@ export class OrdersService {
     @InjectModel(Settings.name) private readonly settingModel: Model<SettingsDocument>,
     @InjectModel('Product') private productModel: Model<ProductDocument>,
     @InjectModel('OrderFile') private orderFileModel: Model<OrderFile>,
-    @InjectModel('Upload') private uploadModel: Model<Upload>
+    @InjectModel('Upload') private uploadModel: Model<Upload>,
+    @InjectModel(Review.name) private readonly reviewModel: Model<Review>,
   ) { }
   async create(createOrderInput: CreateOrderDto, tokenCustomer: string): Promise<Order> {
     const extractToken = tokenCustomer.replace('Bearer', '').trim();
@@ -319,6 +321,9 @@ export class OrdersService {
         ?.map(({ item }) => item);
     }
 
+    // procurar se o cliente fez algum review
+    const reviews = await this.reviewModel.find({user_id: ""}).lean().exec();
+
     const results = data.slice(startIndex, endIndex);
     const url = `/order-status?search=${search}&limit=${limit}`;
 
@@ -366,17 +371,45 @@ export class OrdersService {
     return this.orderStatus[0];
   }
 
-  async getOrderFileItems({ page, limit }: GetOrderFilesDto) {
+  async getOrderFileItems({ page, limit }: GetOrderFilesDto, token: string) {
+    const extractToken = token.split(' ')[1];
+    const decoded = jwt.verify(extractToken, process.env.JWT_SECRET) as any;
+
     if (!page) page = 1;
     if (!limit) limit = 30;
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
 
-    const data = await this.orderFileModel.find().lean().exec();
+    const orderFiles  = await this.orderFileModel.find({customer_id: decoded.id}).lean().exec();
 
-    const results = data.slice(startIndex, endIndex);
+    const orderIds = orderFiles.map(orderFile => orderFile._id.toString());
+
+
+    // Buscar os reviews associados a cada pedido
+    const reviews = await this.reviewModel.find({ order_id: { $in: orderIds } }).lean().exec();
+
+
+    const ordersWithReviews = orderFiles.map(orderFile => {
+      const orderReview = reviews.find(review => review.order_id === orderFile._id.toString());
+
+      return {
+        ...orderFile,
+        id: orderFile._id.toString(),
+        order_id: orderFile.order_id,
+        file: {
+          ...orderFile.file,
+          fileable: {
+            ...orderFile.file.fileable,
+            my_review: [orderReview],
+          }
+        }
+      };
+    });
+
+    const results = ordersWithReviews.slice(startIndex, endIndex);
 
     const url = `/downloads?&limit=${limit}`;
+
     return {
       data: results,
       ...paginate(orderFiles.length, page, limit, results.length, url),
@@ -543,12 +576,13 @@ export class OrdersService {
       // adicionar no banco de dados o orderfile de cada produto detro do array de products
       orderUpdated.products.forEach(async (product) => {
         const orderFile = new this.orderFileModel({
+          _id: orderUpdated._id.toString(),
           id: product.digital_file.fileable_id,
           // gerar um purchase_key
           purchase_key: Math.floor(100000 + Math.random() * 900000).toString(),
           tracking_number: orderUpdated.tracking_number,
           customer_id: orderUpdated.customer_id,
-          order_id: orderUpdated.id,
+          order_id: orderUpdated._id.toString(),
           fileable_id: product.digital_file.fileable_id,
           digital_file_id: product.digital_file.fileable_id,
           order: orderUpdated,

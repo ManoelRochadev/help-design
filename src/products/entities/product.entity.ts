@@ -7,6 +7,7 @@ import { Shop } from 'src/shops/entities/shop.entity';
 import { Tag } from 'src/tags/entities/tag.entity';
 import { Type } from 'src/types/entities/type.entity';
 import { ReviewEnt } from '../../reviews/entities/review.entity';
+import { RatingCount } from 'src/schemas/product.schema';
 
 export enum ProductStatus {
   PUBLISH = 'publish',
@@ -56,6 +57,8 @@ export class Product extends CoreEntity {
   my_review?: ReviewEnt[];
   language?: string;
   translated_languages?: string[];
+  rating_count?: RatingCount[];
+  total_reviews?: number;
 }
 
 export class OrderProductPivot {

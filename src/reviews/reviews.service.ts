@@ -10,6 +10,10 @@ import { ReviewEnt } from './entities/review.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Review } from 'src/schemas/review.schema';
+import * as jwt from 'jsonwebtoken';
+import { UserInitial } from 'src/schemas/user.schema';
+import { Product } from 'src/products/entities/product.entity';
+import { ProductDocument } from 'src/schemas/product.schema';
 
 const reviews = plainToClass(ReviewEnt, reviewJSON);
 const options = {
@@ -22,18 +26,30 @@ const fuse = new Fuse(reviews, options);
 export class ReviewService {
   constructor(
     @InjectModel(Review.name) private readonly reviewModel: Model<Review>,
+    @InjectModel(UserInitial.name) private readonly userModel: Model<UserInitial>,
+    @InjectModel(Product.name) private readonly productModel: Model<ProductDocument>,
   ) {}
   private reviews: ReviewEnt[] = reviews;
 
   async findAllReviews({ limit, page, search, product_id }: GetReviewsDto) {
-    const reviews = await this.reviewModel.find();
+    const reviews = await this.reviewModel.find({product_id: product_id}).lean().exec();
 
-   // console.log(reviews);
     if (!page) page = 1;
     if (!limit) limit = 30;
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
-    let data: ReviewEnt[] = this.reviews;
+    let data: ReviewEnt[] = reviews;
+
+    // colocar os users no data
+    for (let i = 0; i < data.length; i++) {
+      const user = await this.userModel.findById(data[i].user_id).lean().exec();
+      const product = await this.productModel.findById(data[i].product_id).lean().exec();
+
+      data[i].product = product;
+      data[i].user = user;
+    }
+
+  //  console.log(data)
 
     if (search) {
       const parseSearchParams = search.split(';');
@@ -41,10 +57,6 @@ export class ReviewService {
         const [key, value] = searchParam.split(':');
         data = fuse.search(value)?.map(({ item }) => item);
       }
-    }
-
-    if (product_id) {
-      data = data.filter((p) => p.product_id === Number(product_id));
     }
 
     const results = data.slice(startIndex, endIndex);
@@ -56,11 +68,21 @@ export class ReviewService {
   }
 
   findReview(id: number) {
+    console.log(id)
     return this.reviews.find((p) => p.id === id);
   }
 
-  async create(createReviewDto: CreateReviewDto) {
-    const createdReview = new this.reviewModel(createReviewDto);
+  async create(createReviewDto: CreateReviewDto, token: string) {
+    const extractToken = token.split(' ')[1];
+    const decoded = jwt.verify(extractToken, process.env.JWT_SECRET) as any;
+
+    const createdReview = new this.reviewModel({
+      ...createReviewDto,
+      user_id: decoded.id,
+      updated_at: new Date(),
+      created_at: new Date(),
+    });
+
     return createdReview.save();
   }
 

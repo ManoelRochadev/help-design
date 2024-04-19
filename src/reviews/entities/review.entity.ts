@@ -9,22 +9,22 @@ import { Feedback } from 'src/feedbacks/entities/feedback.entity';
 
 export class ReviewEnt extends CoreEntity {
   rating: number;
-  name: string;
+  name?: string;
   comment: string;
-  shop: Shop;
-  order: Order;
-  customer: User;
-  photos: Attachment[];
-  user: User;
-  product: Product;
-  feedbacks: Feedback[];
-  my_feedback: Feedback;
-  positive_feedbacks_count: number;
-  negative_feedbacks_count: number;
-  user_id: number;
-  product_id: number;
-  abusive_reports: Report[];
+  shop?: Shop;
+  order?: Order;
+  customer?: User;
+  photos?: Attachment[];
+  user?: User;
+  product?: Product;
+  feedbacks?: Feedback[];
+  my_feedback?: Feedback;
+  positive_feedbacks_count?: number;
+  negative_feedbacks_count?: number;
+  user_id: number | string;
+  product_id: number | string;
+  abusive_reports?: Report[];
   shop_id: string;
-  variation_option_id: string;
+  variation_option_id?: string;
   abusive_reports_count?: number;
 }

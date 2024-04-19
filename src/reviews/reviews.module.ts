@@ -5,6 +5,8 @@ import { ReviewController } from './reviews.controller';
 import { ReviewService } from './reviews.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ReviewSchema } from 'src/schemas/review.schema';
+import { UserInitial, UserSchema } from 'src/schemas/user.schema';
+import { ProductSchema } from 'src/schemas/product.schema';
 
 @Module({
   imports: [
@@ -13,6 +15,14 @@ import { ReviewSchema } from 'src/schemas/review.schema';
         name: 'Review',
         schema: ReviewSchema,
       },
+      {
+        name: UserInitial.name,
+        schema: UserSchema,
+      },
+      {
+        name: 'Product',
+        schema: ProductSchema
+      }
     ]),
   ],
   controllers: [ReviewController, AbusiveReportsController],

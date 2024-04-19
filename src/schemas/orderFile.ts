@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Document } from "mongoose";
 import { Attachment } from "src/common/entities/attachment.entity";
 import { Order } from "src/orders/entities/order.entity";
 import { Product } from "src/products/entities/product.entity";
@@ -14,7 +15,10 @@ class File {
 }
 
 @Schema()
-export class OrderFile {
+export class OrderFile extends Document {
+  @Prop({ required: true })
+  _id: string;
+  
   @Prop({ required: true })
   id: number;
 
@@ -44,6 +48,9 @@ export class OrderFile {
   
   @Prop()
   digital_file_id?: number;
+
+  @Prop()
+  order_id: string;
 }
 
 export const OrderFileSchema = SchemaFactory.createForClass(OrderFile);

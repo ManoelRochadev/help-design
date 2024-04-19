@@ -13,6 +13,7 @@ export class GetOrderStatusesDto extends PaginationArgs {
   sortedBy?: SortOrder;
   search?: string;
   language?: string;
+  token?: string;
 }
 
 export enum QueryOrderStatusesOrderByColumn {

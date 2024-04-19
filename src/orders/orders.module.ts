@@ -17,10 +17,11 @@ import { SettingsSchema } from 'src/schemas/settings.schema';
 import { ProductSchema } from 'src/schemas/product.schema';
 import { OrderFileSchema } from 'src/schemas/orderFile';
 import { UploadSchema } from 'src/schemas/upload.schema';
+import { ReviewSchema } from 'src/schemas/review.schema';
 
 @Module({
   imports: [
-    AuthModule, 
+    AuthModule,
     PaymentModule,
     MongooseModule.forFeature([
       {
@@ -31,8 +32,8 @@ import { UploadSchema } from 'src/schemas/upload.schema';
         name: UserInitial.name, schema: UserSchema
       },
       {
-         name: 'Settings', schema: SettingsSchema 
-      }, 
+        name: 'Settings', schema: SettingsSchema
+      },
       {
         name: 'Product',
         schema: ProductSchema,
@@ -41,13 +42,17 @@ import { UploadSchema } from 'src/schemas/upload.schema';
         name: 'OrderFile',
         schema: OrderFileSchema,
       },
-      { name: 'Upload', schema: UploadSchema }
+      { name: 'Upload', schema: UploadSchema },
+      {
+        name: 'Review',
+        schema: ReviewSchema,
+      },
     ]),
     StripeModule.forRoot(StripeModule, {
       apiKey: process.env.STRIPE_API_KEY,
       apiVersion: '2022-11-15',
     }),
-    
+
   ],
   controllers: [
     OrdersController,
@@ -59,4 +64,4 @@ import { UploadSchema } from 'src/schemas/upload.schema';
   providers: [OrdersService],
   exports: [OrdersService],
 })
-export class OrdersModule {}
+export class OrdersModule { }

@@ -7,11 +7,13 @@ import {
   Post,
   Body,
   Delete,
+  Req,
 } from '@nestjs/common';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { GetReviewsDto, ReviewPaginator } from './dto/get-reviews.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { ReviewService } from './reviews.service';
+import { Request } from 'express';
 
 @Controller('reviews')
 export class ReviewController {
@@ -35,8 +37,8 @@ export class ReviewController {
 
   //  create a new review
   @Post()
-  create(@Body() createReviewDto: CreateReviewDto) {
-    return this.reviewService.create(createReviewDto);
+  create(@Body() createReviewDto: CreateReviewDto, @Req() req: Request) {
+    return this.reviewService.create(createReviewDto, req.headers.authorization);
   }
 
   @Put(':id')

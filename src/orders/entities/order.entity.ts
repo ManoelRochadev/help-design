@@ -7,6 +7,8 @@ import { Shop } from 'src/shops/entities/shop.entity';
 import { User } from 'src/users/entities/user.entity';
 import { OrderStatus } from './order-status.entity';
 import { ConnectProductOrderPivot } from '../dto/create-order.dto';
+import { ReviewEnt } from 'src/reviews/entities/review.entity';
+import { ObjectId } from 'mongoose';
 
 export enum PaymentGatewayType {
   STRIPE = 'STRIPE',
@@ -104,10 +106,11 @@ export class OrderFiles extends CoreEntity {
   url?: string;
   purchase_key?: string;
   digital_file_id?: number;
-  order_id?: number;
+  order_id?: string;
   customer_id?: number | string;
   file?: File;
   fileable?: Product;
   fileable_id: number;
   attachment_id?: string;
+  my_review?: ReviewEnt;
 }

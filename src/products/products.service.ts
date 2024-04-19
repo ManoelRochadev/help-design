@@ -21,6 +21,7 @@ import { GetTypesDto } from 'src/types/dto/get-types.dto';
 import { Type } from 'src/types/entities/type.entity';
 import { Tags } from 'src/schemas/tag.schema';
 import { Types} from 'src/schemas/type.schema';
+import { Review } from 'src/schemas/review.schema';
 
 const types = plainToClass(Type, typesJson);
 const optionsType = {
@@ -57,7 +58,8 @@ export class ProductsService {
   constructor(@InjectModel(Product.name) private readonly productModel: Model<ProductDocument>,
     @InjectModel(ShopDb.name) private readonly shopModel: Model<ShopDocument>,
     @InjectModel(Tags.name) private readonly tagModel: Model<Tags>,
-    @InjectModel(Types.name) private readonly typeModel: Model<Types>
+    @InjectModel(Types.name) private readonly typeModel: Model<Types>,
+    @InjectModel(Review.name) private readonly reviewModel: Model<Review>,
   ) { }
 
   async create(createProductDto: CreateProductDto) {
@@ -140,9 +142,56 @@ export class ProductsService {
       }
     }
 
-    // remover o _id e colocar id no lugar
+    // colocar o rating_count no data
+    for (let i = 0; i < data.length; i++) {
+      const reviews = await this.reviewModel.find({ product_id: data[i]._id }).lean().exec();
+
+      /* exemplo
+      "rating_count": [
+      {
+        "rating": 5,
+        "total": 2,
+        "positive_feedbacks_count": 0,
+        "negative_feedbacks_count": 0,
+        "my_feedback": null,
+        "abusive_reports_count": 0
+      },
+      {
+        "rating": 3,
+        "total": 1,
+        "positive_feedbacks_count": 0,
+        "negative_feedbacks_count": 0,
+        "my_feedback": null,
+        "abusive_reports_count": 0
+      }
+    ],
+    */
+      const ratingCount = [];
+      for (let j = 1; j <= 5; j++) {
+        const total = reviews.filter((review) => review.rating === j).length;
+        const positive_feedbacks_count = reviews.filter(
+          (review) => review.rating === j && review.rating >= 3,
+        ).length;
+        const negative_feedbacks_count = reviews.filter(
+          (review) => review.rating === j && review.rating < 3,
+        ).length;
+
+        ratingCount.push({
+          rating: j,
+          total,
+          positive_feedbacks_count,
+          negative_feedbacks_count,
+        });
+      }
+
+      data[i].rating_count = ratingCount;
+    }
+
+    //console.log(data)
 
     const results = data.slice(startIndex, endIndex);
+
+    //console.log(results)
 
     const url = `/products?search=${search}&limit=${limit}`;
     return {
@@ -161,9 +210,33 @@ export class ProductsService {
       slug: slug,
     });
 
+    // colocar o rating_count no data
+    const reviews = await this.reviewModel.find({ product_id: product._id }).lean().exec();
+
+    const ratingCount = [];
+    for (let j = 1; j <= 5; j++) {
+      const total = reviews.filter((review) => review.rating === j).length;
+      const positive_feedbacks_count = reviews.filter(
+        (review) => review.rating === j && review.rating >= 3,
+      ).length;
+      const negative_feedbacks_count = reviews.filter(
+        (review) => review.rating === j && review.rating < 3,
+      ).length;
+
+      ratingCount.push({
+        rating: j,
+        total,
+        positive_feedbacks_count,
+        negative_feedbacks_count,
+      });
+    }
+
     return {
       ...product.toObject(),
+      rating_count: ratingCount,
       id: product._id,
+      total_reviews: reviews.length,
+      ratings: reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length,
     }
   }
 

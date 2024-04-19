@@ -23,6 +23,7 @@ import { CheckoutVerificationDto } from './dto/verify-checkout.dto';
 import { Order } from './entities/order.entity';
 import { OrdersService } from './orders.service';
 import { OrderValidationPipe } from './pipe/order-validation.pipe';
+import { Request } from 'express';
 
 @Controller('orders')
 export class OrdersController {
@@ -121,8 +122,9 @@ export class OrderFilesController {
   @Get()
   async getOrderFileItems(
     @Query() query: GetOrderFilesDto,
+    @Req() req: Request,
   ): Promise<OrderFilesPaginator> {
-    return this.ordersService.getOrderFileItems(query);
+    return this.ordersService.getOrderFileItems(query, req?.headers?.authorization);
   }
 
   @Post('digital-file')

@@ -3,6 +3,7 @@ import { Document } from "mongoose";
 import { Attachment } from "src/common/entities/attachment.entity";
 import { Report } from "src/reviews/entities/reports.entity";
 import { Feedback } from 'src/feedbacks/entities/feedback.entity';
+import { User } from "src/users/entities/user.entity";
 
 @Schema()
 export class Review extends Document {
@@ -10,7 +11,7 @@ export class Review extends Document {
   rating: number;
 
   @Prop({ required: true })
-  name: string;
+  order_id: string;
 
   @Prop({ required: true })
   comment: string;
@@ -31,11 +32,13 @@ export class Review extends Document {
   photos: Attachment[];
 
   @Prop()
-  feedbacks: Feedback[];
+  my_feedback?: Feedback;
 
   @Prop()
-  my_feedback: Feedback;
+  created_at: Date;
 
+  @Prop()
+  updated_at: Date;
 }
 
 export const ReviewSchema = SchemaFactory.createForClass(Review);
