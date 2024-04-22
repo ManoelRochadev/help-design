@@ -170,4 +170,9 @@ export class EfiController {
   async qrCode(@Query('id') id: string){
     return this.efyPayment.pixGenerateQrCode(id);
   }
+
+  @Get('webhook')
+  async webhook(@Query('url') url: string){
+    return this.efyPayment.configWebhook(url);
+  }
 }

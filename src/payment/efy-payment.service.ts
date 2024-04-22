@@ -1,3 +1,4 @@
+require('dotenv').config();
 import { Injectable } from "@nestjs/common";
 import EfiPay from 'sdk-typescript-apis-efi';
 import options from '../../credentials'
@@ -68,6 +69,26 @@ export class EfyPaymentService {
 
     try {
       const response = await efiPay.pixGenerateQRCode(params);
+      return response;
+    } catch (error) {
+      console.error(error);
+      return error;
+    }
+  }
+
+  async configWebhook(url: string) {
+    const efiPay = new EfiPay(options);
+    const body = {
+      webhookUrl: url,
+    };
+
+    const params = {
+      chave: process.env.EFI_PIX_KEY,
+    };
+
+    try {
+      const response = await efiPay.pixConfigWebhook(params,body);
+      console.log(response)
       return response;
     } catch (error) {
       console.error(error);
