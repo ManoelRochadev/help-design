@@ -1,7 +1,8 @@
 require('dotenv').config();
-import { Injectable } from "@nestjs/common";
+import { HttpStatus, Injectable } from "@nestjs/common";
 import EfiPay from 'sdk-typescript-apis-efi';
 import options from '../../credentials'
+import { Request } from "express";
 
 export interface CustomerPix {
   devedor?: {
@@ -93,6 +94,15 @@ export class EfyPaymentService {
     } catch (error) {
       console.error(error);
       return error;
+    }
+  }
+
+  async webhookAuthorization(req: Request) {
+    // verificar se a requisição vem do ip da efi 34.193.116.226
+    if (req.ip !== "34.193.116.226") {
+      return HttpStatus.FORBIDDEN;
+    } else {
+      return HttpStatus.OK;
     }
   }
 }
