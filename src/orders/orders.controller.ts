@@ -181,4 +181,9 @@ export class EfiController {
     console.log(req.body)
     return this.efyPayment.webhookAuthorization(req);
   }
+
+  @Post('webhook/pix')
+  async webhookPix(@Req() req: Request) {
+    return this.efyPayment.webhookPix(req);
+  }
 }

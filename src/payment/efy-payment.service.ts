@@ -105,4 +105,10 @@ export class EfyPaymentService {
       return HttpStatus.OK;
     }
   }
+
+  async webhookPix(req: Request) {
+    console.log("webhook pix")
+    console.log(req.body)
+    return HttpStatus.OK;
+  }
 }
