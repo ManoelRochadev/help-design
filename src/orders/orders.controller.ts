@@ -178,6 +178,7 @@ export class EfiController {
 
   @Post('webhook')
   async webhookAuth(@Req() req: Request) {
+    console.log(req.body)
     return this.efyPayment.webhookAuthorization(req);
   }
 }
