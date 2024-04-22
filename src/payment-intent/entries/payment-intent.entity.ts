@@ -7,6 +7,13 @@ export class PaymentIntent {
 }
 
 export class PaymentIntentInfo {
+  txid?: string;
+  loc?: {
+    id: number,
+    location: string,
+    tipoCob: string,
+    criacao: string
+  };
   client_secret?: string | null;
   redirect_url?: string | null;
   payment_id: string;

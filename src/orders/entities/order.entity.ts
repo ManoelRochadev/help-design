@@ -17,6 +17,7 @@ export enum PaymentGatewayType {
   FULL_WALLET_PAYMENT = 'FULL_WALLET_PAYMENT',
   PAYPAL = 'PAYPAL',
   RAZORPAY = 'RAZORPAY',
+  PIX = 'PIX',
 }
 export enum OrderStatusType {
   PENDING = 'order-pending',

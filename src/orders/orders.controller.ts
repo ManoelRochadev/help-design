@@ -24,10 +24,11 @@ import { Order } from './entities/order.entity';
 import { OrdersService } from './orders.service';
 import { OrderValidationPipe } from './pipe/order-validation.pipe';
 import { Request } from 'express';
+import { CustomerPix, EfyPaymentService } from 'src/payment/efy-payment.service';
 
 @Controller('orders')
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(private readonly ordersService: OrdersService) { }
 
   @Post()
   async create(@Body() createOrderDto: CreateOrderDto, @Req() req): Promise<Order> {
@@ -87,7 +88,7 @@ export class OrdersController {
 
 @Controller('order-status')
 export class OrderStatusController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(private readonly ordersService: OrdersService) { }
 
   @Post()
   create(@Body() createOrderStatusDto: CreateOrderStatusDto) {
@@ -117,7 +118,7 @@ export class OrderStatusController {
 
 @Controller('downloads')
 export class OrderFilesController {
-  constructor(private ordersService: OrdersService) {}
+  constructor(private ordersService: OrdersService) { }
 
   @Get()
   async getOrderFileItems(
@@ -137,7 +138,7 @@ export class OrderFilesController {
 
 @Controller('export-order-url')
 export class OrderExportController {
-  constructor(private ordersService: OrdersService) {}
+  constructor(private ordersService: OrdersService) { }
 
   @Get()
   async orderExport(@Query('shop_id') shop_id: string) {
@@ -147,10 +148,26 @@ export class OrderExportController {
 
 @Controller('download-invoice-url')
 export class DownloadInvoiceController {
-  constructor(private ordersService: OrdersService) {}
+  constructor(private ordersService: OrdersService) { }
 
   @Post()
   async downloadInvoiceUrl(@Body('shop_id') shop_id: string) {
     return this.ordersService.downloadInvoiceUrl(shop_id);
+  }
+}
+
+
+@Controller('efi')
+export class EfiController {
+  constructor(private efyPayment: EfyPaymentService) { }
+
+  @Post()
+  async efi(@Body() body: CustomerPix) {
+    return this.efyPayment.createCustomer(body);
+  }
+
+  @Get('qr-code')
+  async qrCode(@Query('id') id: string){
+    return this.efyPayment.pixGenerateQrCode(id);
   }
 }

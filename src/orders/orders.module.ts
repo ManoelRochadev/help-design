@@ -3,6 +3,7 @@ import { AuthModule } from 'src/auth/auth.module';
 import { PaymentModule } from 'src/payment/payment.module';
 import {
   DownloadInvoiceController,
+  EfiController,
   OrderExportController,
   OrderFilesController,
   OrdersController,
@@ -60,6 +61,7 @@ import { ReviewSchema } from 'src/schemas/review.schema';
     OrderFilesController,
     OrderExportController,
     DownloadInvoiceController,
+    EfiController
   ],
   providers: [OrdersService],
   exports: [OrdersService],

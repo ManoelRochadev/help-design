@@ -53,6 +53,7 @@ import { ProductDocument, Settings } from 'src/schemas/product.schema';
 import { OrderFile } from 'src/schemas/orderFile';
 import { Upload } from 'src/schemas/upload.schema';
 import { Review } from 'src/schemas/review.schema';
+import { EfyPaymentService } from 'src/payment/efy-payment.service';
 
 const orders = plainToClass(Order, ordersJson);
 const paymentIntents = plainToClass(PaymentIntent, paymentIntentJson);
@@ -92,6 +93,7 @@ export class OrdersService {
     private readonly authService: AuthService,
     private readonly stripeService: StripePaymentService,
     private readonly paypalService: PaypalPaymentService,
+    private readonly efiService: EfyPaymentService,
     @InjectModel('Order') private orderModel: Model<OrderDb>,
     @InjectModel(UserInitial.name) private readonly userModel: Model<UserDocument>,
     @InjectModel(Settings.name) private readonly settingModel: Model<SettingsDocument>,
@@ -183,6 +185,7 @@ export class OrdersService {
           PaymentGatewayType.STRIPE,
           PaymentGatewayType.PAYPAL,
           PaymentGatewayType.RAZORPAY,
+          PaymentGatewayType.PIX
         ].includes(payment_gateway_type)
       ) {
         const setting: Setting[] = await this.settingModel.find().lean().exec();
@@ -196,6 +199,36 @@ export class OrdersService {
 
       // atualizar o pedido
       const updatedOrder = await this.orderModel.findByIdAndUpdate(order.id, order, {}).lean().exec();
+
+      const orderUpdated = {
+        id: updatedOrder._id.toString(),
+        ...updatedOrder,
+      }
+
+      // adicionar no banco de dados o orderfile de cada produto detro do array de products
+      orderUpdated.products.forEach(async (product) => {
+        const orderFile = new this.orderFileModel({
+          _id: orderUpdated._id.toString(),
+          id: product.digital_file.fileable_id,
+          // gerar um purchase_key
+          purchase_key: Math.floor(100000 + Math.random() * 900000).toString(),
+          tracking_number: orderUpdated.tracking_number,
+          customer_id: orderUpdated.customer_id,
+          order_id: orderUpdated._id.toString(),
+          fileable_id: product.digital_file.fileable_id,
+          digital_file_id: product.digital_file.fileable_id,
+          order: orderUpdated,
+          created_at: new Date(),
+          updated_at: new Date(),
+          file: {
+            id: product.digital_file.fileable_id,
+            attachment_id: product.digital_file.attachment_id,
+            fileable: product,
+          }
+        });
+
+        await orderFile.save();
+      });
 
       return {
         id: updatedOrder._id.toString(),
@@ -216,38 +249,38 @@ export class OrdersService {
     shop_id,
   }: GetOrdersDto): Promise<OrderPaginator> {
     if (!page) page = 1;
-  if (!limit) limit = 15;
-  const startIndex = (page - 1) * limit;
-  const endIndex = page * limit;
+    if (!limit) limit = 15;
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
 
-  let query: any = {};
+    let query: any = {};
 
-  if (shop_id) {
-    query['shop.id'] = Number(shop_id);
-  }
-
-  if (search) {
-    const parseSearchParams = search.split(';');
-    for (const searchParam of parseSearchParams) {
-      const [key, value] = searchParam.split(':');
-      query[key] = value;
+    if (shop_id) {
+      query['shop.id'] = Number(shop_id);
     }
-  }
 
-  try {
-    const count = await this.orderModel.countDocuments(query);
-    const results = await this.orderModel.find(query).skip(startIndex).limit(limit).lean().exec();
+    if (search) {
+      const parseSearchParams = search.split(';');
+      for (const searchParam of parseSearchParams) {
+        const [key, value] = searchParam.split(':');
+        query[key] = value;
+      }
+    }
 
-    const url = `/orders?search=${search}&limit=${limit}`;
-    return {
-      data: results,
-      ...paginate(count, page, limit, results.length, url),
-    };
-  } catch (error) {
-    // Handle error appropriately
-    console.error("Error fetching orders:", error);
-    throw error;
-  }
+    try {
+      const count = await this.orderModel.countDocuments(query);
+      const results = await this.orderModel.find(query).skip(startIndex).limit(limit).lean().exec();
+
+      const url = `/orders?search=${search}&limit=${limit}`;
+      return {
+        data: results,
+        ...paginate(count, page, limit, results.length, url),
+      };
+    } catch (error) {
+      // Handle error appropriately
+      console.error("Error fetching orders:", error);
+      throw error;
+    }
   }
 
   async getOrderByIdOrTrackingNumber(id: number): Promise<Order> {
@@ -322,7 +355,7 @@ export class OrdersService {
     }
 
     // procurar se o cliente fez algum review
-    const reviews = await this.reviewModel.find({user_id: ""}).lean().exec();
+    const reviews = await this.reviewModel.find({ user_id: "" }).lean().exec();
 
     const results = data.slice(startIndex, endIndex);
     const url = `/order-status?search=${search}&limit=${limit}`;
@@ -380,10 +413,9 @@ export class OrdersService {
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
 
-    const orderFiles  = await this.orderFileModel.find({customer_id: decoded.id}).lean().exec();
+    const orderFiles = await this.orderFileModel.find({ customer_id: decoded.id }).lean().exec();
 
     const orderIds = orderFiles.map(orderFile => orderFile._id.toString());
-
 
     // Buscar os reviews associados a cada pedido
     const reviews = await this.reviewModel.find({ order_id: { $in: orderIds } }).lean().exec();
@@ -430,10 +462,10 @@ export class OrdersService {
     const upload = await this.uploadModel.findById(filter[0].digital_file.attachment_id).lean().exec();
     const fileName = upload.fileName
 
-   return {
-    fileUrl: filter[0].digital_file.url,
-    fileName: fileName,
-   };
+    return {
+      fileUrl: filter[0].digital_file.url,
+      fileName: fileName,
+    };
   }
 
   async exportOrder(shop_id: string) {
@@ -494,6 +526,8 @@ export class OrdersService {
       client_secret,
       redirect_url = null,
       customer = null,
+      txid,
+      loc
     } = await this.savePaymentIntent(order, order.payment_gateway);
     const is_redirect = redirect_url ? true : false;
     const paymentIntentInfo: PaymentIntent = {
@@ -502,6 +536,8 @@ export class OrdersService {
       tracking_number: order.tracking_number,
       payment_gateway: order.payment_gateway.toString().toLowerCase(),
       payment_intent_info: {
+        txid,
+        loc,
         client_secret,
         payment_id,
         redirect_url,
@@ -547,6 +583,21 @@ export class OrdersService {
         return this.paypalService.createPaymentIntent(order);
         break;
 
+      case PaymentGatewayType.PIX:
+        // here goes PIX
+        console.log("pix")
+        return this.efiService.createCustomer({
+          valor: {
+            original: ((order.total).toFixed(2)).toString(),
+          },
+          infoAdicionais: [
+            {
+              nome: "Pedido",
+              valor: String(order.tracking_number),
+            }
+          ]
+        });
+        break;
       default:
         //
         break;
@@ -573,36 +624,18 @@ export class OrdersService {
     if (retrievedPaymentIntent.status === 'succeeded') {
       const orderUpdated = await this.changeOrderPaymentStatus(OrderStatusType.COMPLETED, PaymentStatusType.SUCCESS, tracking_number);
 
-      // adicionar no banco de dados o orderfile de cada produto detro do array de products
-      orderUpdated.products.forEach(async (product) => {
-        const orderFile = new this.orderFileModel({
-          _id: orderUpdated._id.toString(),
-          id: product.digital_file.fileable_id,
-          // gerar um purchase_key
-          purchase_key: Math.floor(100000 + Math.random() * 900000).toString(),
-          tracking_number: orderUpdated.tracking_number,
-          customer_id: orderUpdated.customer_id,
-          order_id: orderUpdated._id.toString(),
-          fileable_id: product.digital_file.fileable_id,
-          digital_file_id: product.digital_file.fileable_id,
-          order: orderUpdated,
-          created_at: new Date(),
-          updated_at: new Date(),
-          file: {
-            id: product.digital_file.fileable_id,
-            attachment_id: product.digital_file.attachment_id,
-            fileable: product,
-          }
-        });
+      // atualizar o pedido no orderFile
+      const orderFile = await this.orderFileModel.findOne({ tracking_number: tracking_number }).lean().exec();
 
-        await orderFile.save();
-      });
-      
-  
+      orderFile.order.payment_status = PaymentStatusType.SUCCESS;
+      orderFile.order.order_status = OrderStatusType.COMPLETED;
+
+      await this.orderFileModel.findByIdAndUpdate(orderFile._id, orderFile, {new: true}).lean().exec();
+
       return orderUpdated;
     } else if (retrievedPaymentIntent.status === 'canceled') {
       const orderUpdated = await this.changeOrderPaymentStatus(OrderStatusType.FAILED, PaymentStatusType.FAILED, tracking_number);
-  
+
       return orderUpdated;
     } else {
       return order;
