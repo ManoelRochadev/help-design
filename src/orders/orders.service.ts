@@ -695,6 +695,8 @@ export class OrdersService {
       const body: PixWebhook = req.body;
       const pix = body.pix;
 
+      console.log(pix)
+
       /* Resposta esperada no body
       {
       "pix": [
