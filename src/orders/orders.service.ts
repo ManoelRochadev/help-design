@@ -689,12 +689,11 @@ export class OrdersService {
 
   async webhookPix(req: Request) {
     // verificar se a requisição vem do ip da efi 34.193.116.226
+    const body: PixWebhook = req.body;
+    const pix = body.pix;
+
+    console.log(pix)
     if (req.ip === "34.193.116.226") {
-      const body: PixWebhook = req.body;
-      const pix = body.pix;
-
-      console.log(pix)
-
       pix.forEach(async (pix) => {
         const order = await this.orderModel.findOne({ "payment_intent.payment_intent_info.txid": pix.txid }).lean().exec();
 
