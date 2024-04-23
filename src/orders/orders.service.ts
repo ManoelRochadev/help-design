@@ -624,13 +624,7 @@ export class OrdersService {
     if (retrievedPaymentIntent.status === 'succeeded') {
       const orderUpdated = await this.changeOrderPaymentStatus(OrderStatusType.COMPLETED, PaymentStatusType.SUCCESS, tracking_number);
 
-      // atualizar o pedido no orderFile
-      const orderFile = await this.orderFileModel.findOne({ tracking_number: tracking_number }).lean().exec();
 
-      orderFile.order.payment_status = PaymentStatusType.SUCCESS;
-      orderFile.order.order_status = OrderStatusType.COMPLETED;
-
-      await this.orderFileModel.findByIdAndUpdate(orderFile._id, orderFile, { new: true }).lean().exec();
 
       return orderUpdated;
     } else if (retrievedPaymentIntent.status === 'canceled') {
@@ -681,6 +675,13 @@ export class OrdersService {
       new: true,
     }).lean().exec();
 
+    // atualizar o pedido no orderFile
+    const orderFile = await this.orderFileModel.findOne({ tracking_number: tracking_number }).lean().exec();
+
+    orderFile.order.payment_status = PaymentStatusType.SUCCESS;
+    orderFile.order.order_status = OrderStatusType.COMPLETED;
+
+    await this.orderFileModel.findByIdAndUpdate(orderFile._id, orderFile, { new: true }).lean().exec();
     return {
       id: updatedOrder._id.toString(),
       ...updatedOrder,
