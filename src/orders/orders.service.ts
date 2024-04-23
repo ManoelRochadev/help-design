@@ -689,31 +689,12 @@ export class OrdersService {
 
   async webhookPix(req: Request) {
     // verificar se a requisição vem do ip da efi 34.193.116.226
-    if (req.ip !== "34.193.116.226") {
-      return HttpStatus.FORBIDDEN;
-    } else {
+    if (req.ip === "34.193.116.226") {
       const body: PixWebhook = req.body;
       const pix = body.pix;
 
       console.log(pix)
 
-      /* Resposta esperada no body
-      {
-      "pix": [
-       {
-      "endToEndId": "E1803615022211340s08793XPJ",
-      "txid": "fc9a43k6ff384ryP5f41719",
-      "chave": "2c3c7441-b91e-4982-3c25-6105581e18ae",     
-      "valor": "0.01",
-      "horario": "2020-12-21T13:40:34.000Z",
-      "infoPagador": "pagando o pix"
-    }
-  ]
-}
-
-      */
-
-      // verificar se o txid já existe
       pix.forEach(async (pix) => {
         const order = await this.orderModel.findOne({ "payment_intent.payment_intent_info.txid": pix.txid }).lean().exec();
 
@@ -724,11 +705,15 @@ export class OrdersService {
 
             console.log(updatedOrder);
 
-            return HttpStatus.OK;
           }
         }
       }
       );
+      return HttpStatus.OK;
+
+    } else {
+      console.log("Não passou na verificação")
+      return HttpStatus.OK;
     }
   }
 }
