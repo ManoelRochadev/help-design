@@ -7,7 +7,7 @@ import paymentGatewayJson from '@db/payment-gateway.json';
 import paymentIntentJson from '@db/payment-intent.json';
 import setting from '@db/settings.json';
 import usersJson from '@db/users.json';
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import Fuse from 'fuse.js';
 import { AuthService } from 'src/auth/auth.service';
@@ -42,6 +42,7 @@ import {
   OrderStatusType,
   PaymentGatewayType,
   PaymentStatusType,
+  PixWebhook,
 } from './entities/order.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -54,6 +55,7 @@ import { OrderFile } from 'src/schemas/orderFile';
 import { Upload } from 'src/schemas/upload.schema';
 import { Review } from 'src/schemas/review.schema';
 import { EfyPaymentService } from 'src/payment/efy-payment.service';
+import { Request } from 'express';
 
 const orders = plainToClass(Order, ordersJson);
 const paymentIntents = plainToClass(PaymentIntent, paymentIntentJson);
@@ -584,8 +586,6 @@ export class OrdersService {
         break;
 
       case PaymentGatewayType.PIX:
-        // here goes PIX
-        console.log("pix")
         return this.efiService.createCustomer({
           valor: {
             original: ((order.total).toFixed(2)).toString(),
@@ -630,7 +630,7 @@ export class OrdersService {
       orderFile.order.payment_status = PaymentStatusType.SUCCESS;
       orderFile.order.order_status = OrderStatusType.COMPLETED;
 
-      await this.orderFileModel.findByIdAndUpdate(orderFile._id, orderFile, {new: true}).lean().exec();
+      await this.orderFileModel.findByIdAndUpdate(orderFile._id, orderFile, { new: true }).lean().exec();
 
       return orderUpdated;
     } else if (retrievedPaymentIntent.status === 'canceled') {
@@ -684,6 +684,49 @@ export class OrdersService {
     return {
       id: updatedOrder._id.toString(),
       ...updatedOrder,
+    }
+  }
+
+  async webhookPix(req: Request) {
+    // verificar se a requisição vem do ip da efi 34.193.116.226
+    if (req.ip !== "34.193.116.226") {
+      return HttpStatus.FORBIDDEN;
+    } else {
+      const body: PixWebhook = req.body;
+      const pix = body.pix;
+
+      /* Resposta esperada no body
+      {
+      "pix": [
+       {
+      "endToEndId": "E1803615022211340s08793XPJ",
+      "txid": "fc9a43k6ff384ryP5f41719",
+      "chave": "2c3c7441-b91e-4982-3c25-6105581e18ae",     
+      "valor": "0.01",
+      "horario": "2020-12-21T13:40:34.000Z",
+      "infoPagador": "pagando o pix"
+    }
+  ]
+}
+
+      */
+
+      // verificar se o txid já existe
+      pix.forEach(async (pix) => {
+        const order = await this.orderModel.findOne({ "payment_intent.payment_intent_info.txid": pix.txid }).lean().exec();
+
+        if (order) {
+          if (order.payment_status === PaymentStatusType.PENDING) {
+            // atualizar o pedido
+            const updatedOrder = await this.changeOrderPaymentStatus(OrderStatusType.COMPLETED, PaymentStatusType.SUCCESS, order.tracking_number);
+
+            console.log(updatedOrder);
+
+            return HttpStatus.OK;
+          }
+        }
+      }
+      );
     }
   }
 }

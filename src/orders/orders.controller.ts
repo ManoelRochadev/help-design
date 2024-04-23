@@ -159,7 +159,7 @@ export class DownloadInvoiceController {
 
 @Controller('efi')
 export class EfiController {
-  constructor(private efyPayment: EfyPaymentService) { }
+  constructor(private efyPayment: EfyPaymentService, private ordersService: OrdersService) { }
 
   @Post()
   async efi(@Body() body: CustomerPix) {
@@ -184,6 +184,6 @@ export class EfiController {
 
   @Post('webhook/pix')
   async webhookPix(@Req() req: Request) {
-    return this.efyPayment.webhookPix(req);
+    return this.ordersService.webhookPix(req);
   }
 }

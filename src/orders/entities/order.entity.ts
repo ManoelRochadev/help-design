@@ -115,3 +115,16 @@ export class OrderFiles extends CoreEntity {
   attachment_id?: string;
   my_review?: ReviewEnt;
 }
+
+export class PixWebhook {
+  pix: PixPayment[];
+}
+
+export class PixPayment {
+  endToEndId: string;
+  txid: string;
+  chave: string;
+  valor: string;
+  horario: string;
+  infoPagador: string;
+}
