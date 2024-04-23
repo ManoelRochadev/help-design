@@ -692,8 +692,7 @@ export class OrdersService {
     const body: PixWebhook = req.body;
     const pix = body.pix;
 
-    console.log(pix)
-    console.log(req.ip)
+    console.log(req)
     if (req.ip === "34.193.116.226") {
       pix.forEach(async (pix) => {
         const order = await this.orderModel.findOne({ "payment_intent.payment_intent_info.txid": pix.txid }).lean().exec();
