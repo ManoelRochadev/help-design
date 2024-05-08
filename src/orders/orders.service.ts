@@ -716,4 +716,27 @@ export class OrdersService {
       return HttpStatus.OK;
     }
   }
+
+  // metodo para verificar o status do pagamento
+  async verifyPaymentStatus(tracking_number: number) {
+    const order = await this.orderModel.findOne({ tracking_number: tracking_number }).lean().exec();
+
+    if (order) {
+      if (order.payment_status === PaymentStatusType.PENDING) {
+        return {
+          status: "pending",
+        }
+      } else if (order.payment_status === PaymentStatusType.SUCCESS) {
+        return {
+          status: "success",
+        }
+      } else {
+        return {
+          status: "failed",
+        }
+      }
+    } else {
+      return HttpStatus.NOT_FOUND;
+    }
+  }
 }

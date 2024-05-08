@@ -84,6 +84,12 @@ export class OrdersController {
     }
     this.ordersService.processChildrenOrder(order);
   }
+
+  @Get('/status/pix')
+  getOrderStatus(@Query('tracking_number') tracking_number: number) {
+    console.log(tracking_number);
+    return this.ordersService.verifyPaymentStatus(tracking_number);
+  }
 }
 
 @Controller('order-status')
