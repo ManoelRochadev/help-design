@@ -173,6 +173,7 @@ export class ShopsService {
   }
 
   async update(id: number | string, updateShopDto: UpdateShopDto) {
+    console.log(id)
     const updatedShop = await this.shopModel.findByIdAndUpdate(id, updateShopDto, { new: true }).lean().exec();
     // atualizar no banco
 

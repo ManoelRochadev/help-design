@@ -7,11 +7,13 @@ import {
   Post,
   Put,
   Query,
+  Req,
 } from '@nestjs/common';
 import { CreateWishlistDto } from './dto/create-wishlists.dto';
 import { GetWishlistDto } from './dto/get-wishlists.dto';
 import { UpdateWishlistDto } from './dto/update-wishlists.dto';
 import { WishlistsService } from './wishlists.service';
+import { Request } from 'express';
 
 @Controller('wishlists')
 export class WishlistsController {
@@ -51,12 +53,12 @@ export class WishlistsController {
 
   // wishlists/toggle
   @Post('/toggle')
-  toggle(@Body() CreateWishlistDto: CreateWishlistDto) {
-    return this.wishlistService.toggle(CreateWishlistDto);
+  toggle(@Body() CreateWishlistDto: CreateWishlistDto, @Req() req: Request) {
+    return this.wishlistService.toggle(CreateWishlistDto, req?.headers?.authorization);
   }
   // /in_wishlist/{product_id}
   @Get('/in_wishlist/:product_id')
-  inWishlist(@Param('product_id') id: string) {
-    return this.wishlistService.isInWishlist(+id);
+  inWishlist(@Param('product_id') id: string, @Req() req: Request) {
+    return this.wishlistService.isInWishlist(id, req?.headers?.authorization);
   }
 }

@@ -40,7 +40,7 @@ export class ShopsController {
 
   @Put(':id')
   update(@Param('id') id: string, @Body() updateShopDto: UpdateShopDto) {
-    return this.shopsService.update(+id, updateShopDto);
+    return this.shopsService.update(id, updateShopDto);
   }
 
   @Delete(':id')

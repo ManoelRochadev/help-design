@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import Fuse from 'fuse.js';
 import { paginate } from 'src/common/pagination/paginate';
@@ -9,6 +9,11 @@ import { UpdateWishlistDto } from './dto/update-wishlists.dto';
 import wishlistsJSON from '@db/wishlists.json';
 import productsJson from '@db/products.json';
 import { Product } from '../products/entities/product.entity';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { ProductDocument } from 'src/schemas/product.schema';
+import { UserDocument, UserInitial } from 'src/schemas/user.schema';
+import jwt from 'jsonwebtoken';
 
 const wishlists = plainToClass(Wishlist, wishlistsJSON);
 const products = plainToClass(Product, productsJson);
@@ -20,6 +25,9 @@ const fuse = new Fuse(wishlists, options);
 
 @Injectable()
 export class WishlistsService {
+  constructor(@InjectModel(Product.name) private readonly productModel: Model<ProductDocument>,
+  @InjectModel(UserInitial.name) private readonly userModel: Model<UserDocument>
+) {}
   private wishlist: Wishlist[] = wishlists;
   private products: any = products;
 
@@ -62,17 +70,56 @@ export class WishlistsService {
     return this.wishlist[0];
   }
 
-  isInWishlist(product_id: number) {
-    const product = this.products.find((p) => p.id === Number(product_id));
+  async isInWishlist(product_id: string, token: string) {
+    const extractToken = token.replace('Bearer', '').trim();
 
-    return product?.in_wishlist;
+    if (!extractToken) {
+      throw new UnauthorizedException();
+    }
+
+    const decoded = jwt.verify(extractToken, process.env.JWT_SECRET) as any;
+
+    const user = await this.userModel.findById(decoded.id);
+
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    return user.wishlist_id.includes(product_id);
   }
 
-  toggle({ product_id }: CreateWishlistDto) {
+  async toggle({ product_id }: CreateWishlistDto, token: string) {
+    /*
     const product = this.products.find((p) => p.id === Number(product_id));
 
     product.in_wishlist = !product?.in_wishlist;
 
     return product.in_wishlist;
+    */
+    const extractToken = token.replace('Bearer', '').trim();
+
+    if (!extractToken) {
+      throw new UnauthorizedException();
+    }
+
+    const decoded = jwt.verify(extractToken, process.env.JWT_SECRET) as any;
+
+    const user = await this.userModel.findById(decoded.id);
+
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    // verify if product is in wishlist return true
+    // if not return false
+
+    if (user.wishlist_id.includes(product_id)) {
+      user.wishlist_id = user.wishlist_id.filter((id) => id !== product_id);
+      await user.save();
+      return true;
+    } else {
+      user.wishlist_id.push(product_id);
+      await user.save();
+      return false;
+    }
   }
 }

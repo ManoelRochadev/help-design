@@ -9,6 +9,10 @@ import { UpdateWishlistDto } from './dto/update-wishlists.dto';
 import wishlistsJSON from '@db/wishlists.json';
 import { Product } from '../products/entities/product.entity';
 import productsJson from '@db/products.json';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { ProductDocument } from 'src/schemas/product.schema';
+import { UserDocument, UserInitial } from 'src/schemas/user.schema';
 
 const products = plainToClass(Product, productsJson);
 const wishlists = plainToClass(Wishlist, wishlistsJSON);
@@ -21,6 +25,9 @@ const fuse = new Fuse(wishlists, options);
 
 @Injectable()
 export class MyWishlistService {
+  constructor(@InjectModel(Product.name) private readonly productModel: Model<ProductDocument>,
+  @InjectModel(UserInitial.name) private readonly userModel: Model<UserDocument>
+) {}
   private wishlist: Wishlist[] = wishlists;
   private products: any = products;
 

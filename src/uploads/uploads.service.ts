@@ -13,6 +13,7 @@ export class UploadsService {
   constructor(@InjectModel(Upload.name) private uploadModel: Model<Upload>) { }
 
   async uploadFile(uploadDto: CreateUploadDto[]) {
+ //   console.log(uploadDto)
 
     /*
     const folderName = file[0].location.split('/')[3];
@@ -30,7 +31,10 @@ export class UploadsService {
       const createdUpload = new this.uploadModel(file);
       const upload = await createdUpload.save();
 
-      const filename = file.filePath.split('/')[1];
+      // ultimo item do split
+      // Split na string
+      const splitPath = file.filePath.split('/');
+      const filename = splitPath[splitPath.length - 1];
 
       const dataWithId = {
         id: upload.id,

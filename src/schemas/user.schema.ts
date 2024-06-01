@@ -46,6 +46,9 @@ export class UserInitial extends User {
 
   @Prop()
   followingShops: Shop[];
+
+  @Prop()
+  wishlist_id: string[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(UserInitial);

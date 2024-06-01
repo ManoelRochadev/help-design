@@ -94,7 +94,7 @@ import { StripeModule } from '@golevelup/nestjs-stripe';
     RefundReasonModule,
     MongooseModule.forRoot(process.env.MONGO_URL),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '/..', 'uploadsuser'), // Diretório onde os arquivos foram salvos
+      rootPath: join(__dirname, '../', 'uploadsuser'), // Diretório onde os arquivos foram salvos
       serveRoot: '/uploads',
       serveStaticOptions: {
         index: false,

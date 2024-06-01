@@ -20,7 +20,7 @@ import typesJson from '@db/types.json';
 import { GetTypesDto } from 'src/types/dto/get-types.dto';
 import { Type } from 'src/types/entities/type.entity';
 import { Tags } from 'src/schemas/tag.schema';
-import { Types} from 'src/schemas/type.schema';
+import { Types } from 'src/schemas/type.schema';
 import { Review } from 'src/schemas/review.schema';
 
 const types = plainToClass(Type, typesJson);
@@ -67,7 +67,7 @@ export class ProductsService {
       const shop = await this.shopModel.findById(createProductDto.shop_id).lean().exec();
       const type = await this.typeModel.findById(createProductDto.type_id).lean().exec()
       const tags = await this.tagModel.find({ _id: { $in: createProductDto.tags } }).lean().exec();
-      
+
       const shopWithId = {
         ...shop,
         id: shop._id.toString(),
@@ -118,9 +118,9 @@ export class ProductsService {
         }
       }
 
-      data = searchText.some(obj => Object.keys(obj).includes('name')) ? 
-      fuseType.search(searchText[0]).map((item) => item.item) : 
-      await this.productModel.find({}).where({ $and: searchText })
+      data = searchText.some(obj => Object.keys(obj).includes('name')) ?
+        fuseType.search(searchText[0]).map((item) => item.item) :
+        await this.productModel.find({}).where({ $and: searchText })
 
       // Filter data throw price
       if (priceFilter) {
@@ -409,11 +409,11 @@ export class ProductsService {
     };
   }
 
-  async update(id: number, updateProductDto: UpdateProductDto) {
+  async update(id: string, updateProductDto: UpdateProductDto) {
     // atualizar um produto
     try {
-      const updatedProduct = await this.productModel.findOneAndUpdate(
-        { id: id },
+      const updatedProduct = await this.productModel.findByIdAndUpdate(
+        id,
         updateProductDto,
         { new: true },
       );
